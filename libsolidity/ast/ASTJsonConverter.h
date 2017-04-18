@@ -111,12 +111,12 @@ private:
 	void setJsonNode(
 		ASTNode const& _node,
 		std::string const& _nodeName,
-		std::initializer_list<std::pair<std::string const, Json::Value>>&& _attributes
+		std::initializer_list<std::pair<std::string, Json::Value>>&& _attributes
 	);
 	void setJsonNode(
 		ASTNode const& _node,
 		std::string const& _nodeName,
-		std::vector<std::pair<std::string const, Json::Value>>&& _attributes
+		std::vector<std::pair<std::string, Json::Value>>&& _attributes
 	);
 	std::string sourceLocationToString(SourceLocation const& _location) const;
 	std::string namePathToString(std::vector<ASTString> const& _namePath) const;
@@ -138,6 +138,10 @@ private:
 	}
 	Json::Value typePointerToJson(TypePointer _tp);
 	Json::Value typePointerToJson(std::shared_ptr<std::vector<TypePointer>> _tps);
+	void appendExpressionAttributes(
+		std::vector<std::pair<std::string, Json::Value>> * _attributes,
+		ExpressionAnnotation const& _annotation
+	);
 	bool m_legacy = false; ///< if true, use legacy format
 	bool m_inEvent = false; ///< whether we are currently inside an event or not
 	Json::Value m_currentValue;
