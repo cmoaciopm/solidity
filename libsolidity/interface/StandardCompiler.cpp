@@ -162,11 +162,55 @@ Json::Value StandardCompiler::compileInternal(Json::Value const& _input)
 	if (!sources)
 		return formatFatalError("JSONError", "No input sources specified.");
 
+	Json::Value errors = Json::arrayValue;
+
 	for (auto const& sourceName: sources.getMemberNames())
 		if (sources[sourceName]["content"].isString())
 			m_compilerStack.addSource(sourceName, sources[sourceName]["content"].asString());
 		else if (sources[sourceName]["urls"].isArray())
-			return formatFatalError("UnimplementedFeatureError", "Input URLs not supported yet.");
+		{
+			unsigned count = sources[sourceName]["urls"].size();
+			for (auto const& url: sources[sourceName]["urls"])
+			{
+				count--;
+				ReadFile::Result result{false, "No read file callback supplied"};
+				try
+				{
+					cout << "reading " << url.asString() << endl;
+					if (m_readFile)
+						result = m_readFile(url.asString());
+				}
+				catch (Exception const& _exception)
+				{
+					errors.append(formatError(
+						(count == 0) ? true : false,
+						"Exception",
+						"general",
+						"Exception during read callback: " + boost::diagnostic_information(_exception)
+					));
+				}
+				catch (...)
+				{
+					errors.append(formatError(
+						(count == 0) ? true : false,
+						"Exception",
+						"general",
+						"Exception during read callback"
+					));
+				}
+				if (result.success)
+					m_compilerStack.addSource(sourceName, result.contentsOrErrorMessage);
+				else
+					/// Import failure is a warning, except if it is the last URL.
+					errors.append(formatError(
+						(count == 0) ? true : false,
+						"IOError",
+						"general",
+						"Cannot import url (\"" + url.asString() + "\"): " + result.contentsOrErrorMessage
+					));
+			}
+			//return formatFatalError("UnimplementedFeatureError", "Input URLs not supported yet.");
+		}
 		else
 			return formatFatalError("JSONError", "Invalid input source specified.");
 
@@ -196,7 +240,6 @@ Json::Value StandardCompiler::compileInternal(Json::Value const& _input)
 
 	auto scannerFromSourceName = [&](string const& _sourceName) -> solidity::Scanner const& { return m_compilerStack.scanner(_sourceName); };
 
-	Json::Value errors = Json::arrayValue;
 	bool success = false;
 
 	try
