@@ -74,12 +74,7 @@ void ASTJsonConverter::setJsonNode(
 	{
 		m_currentValue["name"] = _nodeType;
 		Json::Value attrs(Json::objectValue);
-<<<<<<< HEAD
-		if (
-			//these nodeTypes need to have a children-node even if it is empty
-=======
 		if ( //these nodeTypes need to have a children-node even if it is empty
->>>>>>> 550e7209e7de3426d98fd515773615e4319281bd
 			(_nodeType == "VariableDeclaration") ||
 			(_nodeType == "ParameterList") ||
 			(_nodeType == "Block") ||
@@ -106,11 +101,7 @@ void ASTJsonConverter::setJsonNode(
 					m_currentValue["children"].append(std::move(e.second));
 				if (e.second.isArray())
 					for (auto& child : e.second)
-<<<<<<< HEAD
 						if (!child.isNull())
-=======
-						if (!child.isNull()) // in case of (_,b) = f()
->>>>>>> 550e7209e7de3426d98fd515773615e4319281bd
 							m_currentValue["children"].append(std::move(child));
 			}
 			else
